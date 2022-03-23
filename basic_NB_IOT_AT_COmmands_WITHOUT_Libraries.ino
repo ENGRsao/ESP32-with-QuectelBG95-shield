@@ -1,8 +1,8 @@
 // GPRS credentials
-const char apn[]  = "iot.1nce.net";
+const char apn[]  = "iot.1nce.net"; //1nce SIM Ip address
 const char user[] = "";
 const char pass[] = "";
-String dat = "{\"msisdn\":\"393600291838\",\"time\": \"22/03/23,18:00:09+04\",\"batteryLevel\":\"70%\",\"temperature\": \"30C\"}";
+String dat = "{\"msisdn\":\"393600291838\",\"time\": \"22/03/23,18:00:09+04\",\"batteryLevel\":\"70%\",\"temperature\": \"30C\"}";  //data to be sent
 
 
 enum RegStatus {
@@ -25,6 +25,9 @@ HardwareSerial serialGSM(2);
 bool is_modem_registered = false;
 
 unsigned long previousMillis = 0;
+String IPaddress = "xx.xx.xx.xx";
+int remote_port = 8000;
+String connect_to = "AT+QIOPEN=1,2,\"UDP\"," + IPaddress + "," + String (remote_port) + ",0,2";  
 
 
 void waitResponse(int timeout = 1000L) {
@@ -88,15 +91,15 @@ String getSimCCID() {
 void sendData() {
   
   Serial.println(sendAT("AT+CPIN?"));
-  //Serial.println(sendAT("AT+QCFG=\"roamservice\",2,1"));
+  //Serial.println(sendAT("AT+QCFG=\"roamservice\",2,1"));   //uncomment to use 1nce SIM in a different location outside UK
   Serial.println(sendAT("AT+QCFG=\"nwscanmode\",03,1"));
   Serial.println(sendAT("AT+QCFG=\"iotopmode\",1,1"));
   Serial.println(sendAT("AT+COPS=0,0"));
   delay(60000);
   String response = sendAT("AT+CREG?");
   Serial.println(response);
-  
-  while (response.indexOf("+CREG: 0,2")>0){
+  /// the Quectel BG95 takes about 4minutes before it is able to connect via NB-IOT so you have to keep it on check until it is connected.
+  while (response.indexOf("+CREG: 0,2")>0){ 
     delay(60000);
     Serial.println(sendAT("AT+CPSMS=0"));
     response = sendAT("AT+CREG?");
@@ -115,8 +118,8 @@ void sendData() {
   Serial.println(sendAT("AT+QIACT=1"));
 
   Serial.println(sendAT("AT+QIACT?"  ));
-
-  Serial.println(sendAT("AT+QIOPEN=1,2,\"UDP\",\"31.199.29.67\",6000,0,2"));
+  String 
+  Serial.println(sendAT(connect_to));
 
    delay(1000);
   Serial.println(senddata(dat));
